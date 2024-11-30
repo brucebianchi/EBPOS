@@ -1,60 +1,37 @@
-import streamlit as st
-import pandas as pd
-import numpy as np
-import matplotlib.pyplot as plt
-from io import BytesIO
-from statsmodels.tsa.stattools import adfuller
-from pmdarima import auto_arima
-import openai
-
-# Configuração da API da OpenAI
-openai.api_key = st.secrets["OPENAI_API_KEY"]
-
-# Função para verificar estacionaridade
-def verificar_estacionaridade(serie):
-    resultado = adfuller(serie)
-    if resultado[1] > 0.05:
-        st.write("A série não é estacionária. Aplicando diferenciação.")
-        return np.diff(serie), True
-    else:
-        st.write("A série é estacionária.")
-        return serie, False
-
-# Função para calcular projeções com ARIMA
-def calcular_projecao_arima(valores, colunas, categoria, passos=6):
-    try:
-        modelo_auto = auto_arima(valores, seasonal=False, stepwise=True, suppress_warnings=True)
-        previsoes = modelo_auto.predict(n_periods=passos)
-        previsoes_indices = [f"Proj {i+1}" for i in range(passos)]
-
-        # Média Móvel
-        media_movel = pd.Series(valores).rolling(window=3).mean()
-
-        # Gráfico
-        fig, ax = plt.subplots(figsize=(12, 6))
-        ax.plot(colunas, valores, label=f"Valores Reais ({categoria})", marker="o", color="blue")
-        ax.plot(previsoes_indices, previsoes, label=f"Projeção (ARIMA) ({categoria})", marker="x", color="red")
-        ax.plot(colunas, media_movel, label=f"Média Móvel ({categoria})", linestyle="--", color="orange")
-        ax.set_title(f"Projeção de {categoria}: Próximos {passos} Períodos (ARIMA e Média Móvel)")
-        ax.set_xlabel("Períodos")
-        ax.set_ylabel("Valores")
-        ax.grid(True, linestyle="--", alpha=0.6)
-        ax.legend()
-        st.pyplot(fig)
+6))
+        plt.plot(colunas, valores, label=f"Valores Reais ({categoria})", marker="o", color="blue")
+        plt.plot(previsoes_indices, previsoes, label=f"Projeção (ARIMA) ({categoria})", marker="x", color="red")
+        plt.plot(colunas, media_movel, label=f"Média Móvel ({categoria})", linestyle="--", color="orange")
+        plt.title(f"Projeção de {categoria}: Próximos {passos} Períodos (ARIMA e Média Móvel)")
+        plt.xlabel("Períodos")
+        plt.ylabel("Valores")
+        plt.grid(True, linestyle="--", alpha=0.6)
+        plt.xticks(rotation=45)
+        plt.legend()
+        plt.tight_layout()
+        plt.show()
 
     except Exception as e:
-        st.error(f"Erro ao ajustar o modelo ARIMA para {categoria}: {e}")
+        print(f"Erro ao ajustar o modelo ARIMA para {categoria}: {e}")
 
-# Função para gerar relatório com a OpenAI
+# Função para analisar os dados
+def explorar_dados(dados):
+    print("Explorando os dados fornecidos...")
+
+    for categoria in dados.index:
+        valores = dados.loc[categoria].astype(float).values
+        colunas = dados.columns
+        print(f"\nAnalisando a categoria: {categoria}")
+        calcular_projecao_arima(valores, colunas, categoria)
+
+# Gerar relatório com a OpenAI
 def gerar_relatorio_ia(dados_analise):
     prompt = f"""
     Com base nos seguintes dados financeiros:
 
-    Crescimento Anual da Receita Bruta: {dados_analise['crescimento_anual_receita']}
-    Crescimento do Lucro Bruto: {dados_analise['crescimento_lucro_bruto']:.2f}%
-    Crescimento do Lucro Líquido: {dados_analise['crescimento_lucro_liquido']:.2f}%
-    Despesas Relativas à Receita Bruta: {dados_analise['despesas_percentuais']}
-    Percentual Médio de CPV/CMV: {dados_analise['cpv_percentual']:.2f}%
+    - Crescimento Anual da Receita Bruta: {dados_analise['crescimento_anual']}
+    - Percentuais de Despesas: {dados_analise['despesas_percentuais']}
+    - Percentual Médio de CPV/CMV: {dados_analise['cpv_percentual']}
 
     Gere um relatório detalhado que inclua:
     - Análise do crescimento da receita.
@@ -75,36 +52,43 @@ def gerar_relatorio_ia(dados_analise):
     except Exception as e:
         return f"Erro ao acessar a API da OpenAI: {str(e)}"
 
-# Interface Streamlit
-st.title("Análise Financeira com IA e ARIMA")
-st.write("Faça upload de um arquivo Excel contendo dados financeiros para análise.")
+# Função para processar o upload do arquivo
+def processar_upload(change):
+    with output:
+        output.clear_output()  # Limpa mensagens anteriores
+        try:
+            uploaded_file = next(iter(upload.value.values()))
+            content = uploaded_file['content']
 
-uploaded_file = st.file_uploader("Carregar arquivo Excel", type=["xlsx"])
-if uploaded_file:
-    try:
-        # Ler o conteúdo do arquivo Excel
-        dados = pd.read_excel(uploaded_file, index_col=0)
-        dados.index.name = "Categoria"
+            # Ler o conteúdo do arquivo Excel
+            dados = pd.read_excel(BytesIO(content), index_col=0)
+            dados.index.name = "Categoria"
 
-        st.write("Categorias disponíveis no arquivo:")
-        st.write(dados.index.tolist())
+            print("Categorias disponíveis no arquivo:")
+            print(dados.index.tolist())
 
-        # Análise dos dados
-        receita_bruta, crescimento_anual = crescimento_anual_receita(dados)
-        st.write("Crescimento Anual da Receita Bruta:")
-        st.write(crescimento_anual)
+            # Análise dos dados
+            explorar_dados(dados)
 
-        # Gerar relatórios
-        dados_analise = {
-            "crescimento_anual_receita": crescimento_anual.dropna().to_dict(),
-            "crescimento_lucro_bruto": 10.0,  # Exemplo estático para simplificar
-            "crescimento_lucro_liquido": 15.0,
-            "despesas_percentuais": {"Venda": 30.0, "Administrativa": 20.0},
-            "cpv_percentual": 50.0
-        }
-        relatorio = gerar_relatorio_ia(dados_analise)
-        st.subheader("Relatório Gerado pela IA:")
-        st.write(relatorio)
+            # Gerar relatório com OpenAI
+            dados_analise = {
+                "crescimento_anual": "Exemplo de Crescimento",  # Substituir com cálculo real
+                "despesas_percentuais": "Exemplo de Percentuais",  # Substituir com cálculo real
+                "cpv_percentual": "Exemplo de CPV/CMV"  # Substituir com cálculo real
+            }
+            relatorio = gerar_relatorio_ia(dados_analise)
+            print("\nRelatório Gerado pela IA:")
+            print(relatorio)
+        except Exception as e:
+            print(f"Erro ao processar o upload: {e}")
 
-    except Exception as e:
-        st.error(f"Erro ao processar o arquivo: {e}")
+# Componente de upload de arquivo
+upload = FileUpload(
+    accept=".xlsx",  # Aceitar somente arquivos Excel
+    multiple=False   # Permitir apenas um arquivo por vez
+)
+upload.observe(processar_upload, names='value')
+
+# Exibir interface
+print("Por favor, faça o upload do arquivo Excel com os dados financeiros:")
+display(VBox([upload, output]))
