@@ -7,4 +7,4 @@ openpyxl
 openai
 scikit-learn
 Cython>=0.29.36
-setuptools==65.5.1  # Fixação de versão para evitar incompatibilidade
+setuptools==65.5.1  # Versão compatível com Python 3.12
