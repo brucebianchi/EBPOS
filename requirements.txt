@@ -1,8 +1,12 @@
+makefile
+Copiar código
 streamlit
 matplotlib
 pandas
 numpy
 statsmodels
-pmdarima
+pmdarima==2.0.3  # Especifique uma versão estável
 openpyxl
 openai
+scikit-learn     # Dependência do pmdarima
+Cython           # Dependência do pmdarima
