@@ -5,17 +5,16 @@ import matplotlib.pyplot as plt
 from statsmodels.tsa.arima.model import ARIMA
 import openai
 
-# Configuração da API da OpenAI
 
+import streamlit as st
+
+# Verificar segredos carregados
+st.write("Segredos carregados:")
 try:
-    openai.api_key = st.secrets["OPENAI_API_KEY"]
+    st.write(st.secrets)
 except Exception as e:
-    st.error(f"Erro ao acessar a chave da API da OpenAI: {e}")
+    st.error(f"Erro ao carregar segredos: {e}")
 
-if "OPENAI_API_KEY" in st.secrets:
-    openai.api_key = st.secrets["OPENAI_API_KEY"]
-else:
-    st.error("Erro: 'OPENAI_API_KEY' não configurado no painel de Secrets do Streamlit Cloud.")
 
 
 # Título do aplicativo
