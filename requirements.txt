@@ -1,6 +1,6 @@
-numpy>=1.24
-Cython>=0.29
-scikit-learn>=1.0
+numpy==1.24.4
+Cython>=0.29.36
+scikit-learn
 pmdarima==2.0.3
 pandas
 matplotlib
