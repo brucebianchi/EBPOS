@@ -6,6 +6,12 @@ from statsmodels.tsa.arima.model import ARIMA
 import openai
 
 # Configuração da API da OpenAI
+
+try:
+    openai.api_key = st.secrets["OPENAI_API_KEY"]
+except Exception as e:
+    st.error(f"Erro ao acessar a chave da API da OpenAI: {e}")
+
 if "OPENAI_API_KEY" in st.secrets:
     openai.api_key = st.secrets["OPENAI_API_KEY"]
 else:
