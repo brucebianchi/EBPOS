@@ -6,17 +6,6 @@ from statsmodels.tsa.arima.model import ARIMA
 import openai
 
 
-import streamlit as st
-
-# Verificar segredos carregados
-st.write("Segredos carregados:")
-try:
-    st.write(st.secrets)
-except Exception as e:
-    st.error(f"Erro ao carregar segredos: {e}")
-
-
-
 # Título do aplicativo
 st.title("Análise de Séries Temporais com ARIMA")
 st.write("Carregue um arquivo Excel para realizar análises de séries temporais e gerar previsões.")
