@@ -6,7 +6,7 @@ from statsmodels.tsa.arima.model import ARIMA
 import openai
 
 # Configuração da API da OpenAI
-st.secrets["OPENAI_API_KEY"] = "SUA_CHAVE_AQUI"  # Insira sua chave da API da OpenAI
+openai.api_key = st.secrets["OPENAI_API_KEY"]
 
 # Título do aplicativo
 st.title("Análise de Séries Temporais com ARIMA")
