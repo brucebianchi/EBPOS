@@ -6,7 +6,11 @@ from statsmodels.tsa.arima.model import ARIMA
 import openai
 
 # Configuração da API da OpenAI
-openai.api_key = st.secrets["OPENAI_API_KEY"]
+if "OPENAI_API_KEY" in st.secrets:
+    openai.api_key = st.secrets["OPENAI_API_KEY"]
+else:
+    st.error("Erro: 'OPENAI_API_KEY' não configurado no painel de Secrets do Streamlit Cloud.")
+
 
 # Título do aplicativo
 st.title("Análise de Séries Temporais com ARIMA")
