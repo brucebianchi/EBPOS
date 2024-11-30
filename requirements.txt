@@ -1,10 +1,7 @@
-numpy==1.24.4
+streamlit
+numpy
 pandas
 matplotlib
 statsmodels
-streamlit
 openpyxl
 openai
-scikit-learn
-Cython>=0.29.36
-setuptools==65.5.1  # Versão compatível com Python 3.12
